@@ -8,6 +8,6 @@
 
 ## 使用的 Caddy 模块
 
-github.com/caddyserver/replace-response
-github.com/mholt/caddy-ratelimit
+github.com/caddyserver/replace-response  
+github.com/mholt/caddy-ratelimit  
 github.com/porech/caddy-maxmind-geolocation
