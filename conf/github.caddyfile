@@ -1,0 +1,135 @@
+(communal) {
+	header_down -Strict-Transport-Security
+	header_down -Content-Security-Policy
+	header_down -Set-Cookie
+	header_down -x-pjax-url
+	header_down -Referrer-Policy
+	header_up Accept-Encoding identity
+}
+
+github.example.com {
+	import log github.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	replace {
+		https://raw.githubusercontent.com https://github-raw.example.com
+		https://github.com https://github.example.com
+		https://github.githubassets.com https://github-assets.example.com
+		https://api.github.com https://github-api.example.com
+	}
+
+	@downloads path_regexp ^/[^/]+/[^/]+/releases/download/.*$
+	redir @downloads https://github-download.example.com{re.0}
+
+	@archives path_regexp ^/[^/]+/[^/]+/archive/.*$
+	redir @archives https://github-archive.example.com{re.0}
+
+	@artifacts path_regexp ^/[^/]+/[^/]+/suites/[^/]+/artifacts/.*$
+	redir @artifacts https://github-download.example.com{re.0}
+
+	reverse_proxy https://github.com {
+		import communal
+		header_up Host github.com
+		header_up Referer https://github.com/
+		header_up Origin https://github.com
+	}
+}
+
+github-assets.example.com {
+	import log github-assets.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	reverse_proxy https://github.githubassets.com {
+		import communal
+		header_up Host github.githubassets.com
+	}
+}
+
+github-codeload.example.com {
+	import log github-codeload.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	reverse_proxy https://codeload.github.com {
+		import communal
+		header_up Host github.com
+	}
+}
+
+github-download.example.com {
+	import log github-download.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	@archives path_regexp ^/[^/]+/[^/]+/archive/.*$
+	redir @archives https://github-archive.example.com{re.0}
+
+	@downloads path_regexp ^/[^/]+/[^/]+/releases(/latest)?/download/.*$
+	reverse_proxy @downloads https://github.com {
+		import communal
+		header_up Host github.com
+	}
+
+	@artifacts path_regexp ^/[^/]+/[^/]+/suites/[^/]+/artifacts/.*$
+	reverse_proxy @artifacts https://github.com {
+		import communal
+		header_up Host github.com
+	}
+}
+
+github-raw.example.com {
+	import log github-raw.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	replace https://raw.githubusercontent.com https://github-raw.example.com
+
+	reverse_proxy https://raw.githubusercontent.com {
+		import communal
+		header_up Host raw.githubusercontent.com
+	}
+}
+
+github-api.example.com {
+	import log github-api.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	replace {
+		https://github.com https://github.example.com
+		https://raw.githubusercontent.com https://github-raw.example.com
+		https://api.github.com https://github-api.example.com
+	}
+
+	reverse_proxy https://api.github.com {
+		import communal
+		header_up Host api.github.com
+	}
+}
+
+github-archive.example.com {
+	import log github-archive.example.com
+	import common
+	import ratelimit
+	import geoblock
+
+	@downloads path_regexp ^/[^/]+/[^/]+/releases(/latest)?/download/.*$
+	redir @downloads https://github-download.example.com{re.0}
+
+	@artifacts path_regexp ^/[^/]+/[^/]+/suites/[^/]+/artifacts/.*$
+	redir @artifacts https://github-download.example.com{re.0}
+
+	@archives path_regexp ^/[^/]+/[^/]+/archive/.*$
+	reverse_proxy @archives https://github.com {
+		import communal
+		header_up Host github.com
+	}
+}

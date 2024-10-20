@@ -1,0 +1,28 @@
+google.example.com {
+	import log google.example.com
+	import common
+	import ratelimit
+	import geoblock
+	replace http://www.google.com http://google.example.com
+	replace https://www.google.com http://google.example.com
+
+	reverse_proxy https://www.google.com {
+		header_up Host www.google.com
+		header_down Set-Cookie google.com google.example.com
+	}
+}
+
+google-scholar.example.com {
+	import log google-scholar.example.com
+	import common
+	import ratelimit
+	import geoblock
+	replace http://www.google.com http://google.example.com
+	replace https://www.google.com http://google.example.com
+	replace https://scholar.google.com http://google-scholar.example.com
+
+	reverse_proxy https://scholar.google.com {
+		header_up Host scholar.google.com
+		header_down Set-Cookie google.com google-scholar.example.com
+	}
+}
